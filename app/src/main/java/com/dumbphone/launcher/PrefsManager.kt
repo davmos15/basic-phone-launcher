@@ -16,9 +16,10 @@ class PrefsManager(context: Context) {
         private const val KEY_SHOW_SECONDS = "show_seconds"
         private const val KEY_USE_24_HOUR = "use_24_hour"
         private const val KEY_GREYSCALE = "greyscale_mode"
-        private const val KEY_WIDGET_ID = "home_widget_id"
         private const val KEY_WEATHER_ENABLED = "weather_enabled"
         private const val KEY_FOCUS_MODE = "focus_mode_enabled"
+        private const val KEY_APP_ICON_SIZE = "app_icon_size"
+        private const val KEY_SHOW_APP_LABELS = "show_app_labels"
 
         val DEFAULT_CLOCK_COLOUR = Color.parseColor("#7FBF3F")
 
@@ -29,6 +30,11 @@ class PrefsManager(context: Context) {
             "com.google.android.apps.messaging",
             "com.android.mms",
         )
+
+        // Icon sizes: 0 = small, 1 = medium, 2 = large
+        const val ICON_SIZE_SMALL = 0
+        const val ICON_SIZE_MEDIUM = 1
+        const val ICON_SIZE_LARGE = 2
     }
 
     var isFirstRun: Boolean
@@ -55,10 +61,6 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_GREYSCALE, false)
         set(value) = prefs.edit().putBoolean(KEY_GREYSCALE, value).apply()
 
-    var widgetId: Int
-        get() = prefs.getInt(KEY_WIDGET_ID, -1)
-        set(value) = prefs.edit().putInt(KEY_WIDGET_ID, value).apply()
-
     var weatherEnabled: Boolean
         get() = prefs.getBoolean(KEY_WEATHER_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_WEATHER_ENABLED, value).apply()
@@ -67,7 +69,16 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_FOCUS_MODE, false)
         set(value) = prefs.edit().putBoolean(KEY_FOCUS_MODE, value).apply()
 
-    /** Returns the effective foreground colour for UI elements. */
+    /** 0 = small, 1 = medium, 2 = large */
+    var appIconSize: Int
+        get() = prefs.getInt(KEY_APP_ICON_SIZE, ICON_SIZE_MEDIUM)
+        set(value) = prefs.edit().putInt(KEY_APP_ICON_SIZE, value).apply()
+
+    var showAppLabels: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_APP_LABELS, true)
+        set(value) = prefs.edit().putBoolean(KEY_SHOW_APP_LABELS, value).apply()
+
+    /** Returns the foreground colour for UI elements. */
     fun getFgColour(): Int = clockColour
 
     /** Returns a dimmed version of the foreground colour for secondary text. */

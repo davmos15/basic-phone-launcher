@@ -40,14 +40,17 @@
         android:gravity="center"
         android:layout_marginTop="4dp" />
 
-    <!-- Widget container -->
-    <FrameLayout
-        android:id="@+id/widgetContainer"
-        android:layout_width="match_parent"
+    <!-- Weather -->
+    <TextView
+        android:id="@+id/weatherText"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minHeight="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 
     <!-- Spacer (bottom) -->
     <View

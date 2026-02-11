@@ -44,8 +44,8 @@ class AppDrawerActivity : AppCompatActivity() {
         titleText = findViewById(R.id.drawerTitle)
         recyclerView = findViewById(R.id.appGrid)
 
-        // Nokia-style 3-column grid
-        recyclerView.layoutManager = GridLayoutManager(this, 3)
+        // Grid columns based on icon size
+        recyclerView.layoutManager = GridLayoutManager(this, getColumnCount())
 
         // Swipe-down to go back to home screen
         gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
@@ -77,8 +77,16 @@ class AppDrawerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Refresh grid columns in case icon size changed
+        recyclerView.layoutManager = GridLayoutManager(this, getColumnCount())
         loadApps()
         applyTheme()
+    }
+
+    private fun getColumnCount(): Int = when (prefs.appIconSize) {
+        PrefsManager.ICON_SIZE_SMALL -> 4
+        PrefsManager.ICON_SIZE_LARGE -> 2
+        else -> 3
     }
 
     private fun loadApps() {
@@ -112,6 +120,13 @@ class AppDrawerActivity : AppCompatActivity() {
         private val pm: PackageManager
     ) : RecyclerView.Adapter<AppGridAdapter.AppViewHolder>() {
 
+        private val iconSizeDp = when (prefs.appIconSize) {
+            PrefsManager.ICON_SIZE_SMALL -> 36
+            PrefsManager.ICON_SIZE_LARGE -> 64
+            else -> 48
+        }
+        private val showLabels = prefs.showAppLabels
+
         inner class AppViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val icon: ImageView = view.findViewById(R.id.appIcon)
             val label: TextView = view.findViewById(R.id.appLabel)
@@ -128,14 +143,25 @@ class AppDrawerActivity : AppCompatActivity() {
             val label = app.loadLabel(pm).toString()
             val icon = app.loadIcon(pm)
 
-            holder.label.text = if (label.length > 10) label.substring(0, 9) + "\u2026" else label
+            // Apply icon size
+            val sizePx = (iconSizeDp * holder.itemView.resources.displayMetrics.density).toInt()
+            holder.icon.layoutParams.width = sizePx
+            holder.icon.layoutParams.height = sizePx
             holder.icon.setImageDrawable(icon)
 
             // Monochrome icons with chosen colour
             val matrix = ColorMatrix().apply { setSaturation(0f) }
             holder.icon.colorFilter = ColorMatrixColorFilter(matrix)
             holder.icon.alpha = 0.8f
-            holder.label.setTextColor(prefs.getFgColour())
+
+            // Label visibility
+            if (showLabels) {
+                holder.label.text = if (label.length > 10) label.substring(0, 9) + "\u2026" else label
+                holder.label.setTextColor(prefs.getFgColour())
+                holder.label.visibility = View.VISIBLE
+            } else {
+                holder.label.visibility = View.GONE
+            }
 
             holder.itemView.setOnClickListener {
                 val launchIntent = pm.getLaunchIntentForPackage(app.activityInfo.packageName)

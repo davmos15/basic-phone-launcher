@@ -1,5 +1,7 @@
 package com.dumbphone.launcher
 
+import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -10,7 +12,6 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.abs
@@ -32,6 +33,12 @@ class DisplaySettingsActivity : AppCompatActivity() {
             "#00E676" to "Mint",
             "#FF1744" to "Red",
             "#18FFFF" to "Cyan",
+        )
+
+        private val ICON_SIZE_OPTIONS = arrayOf(
+            "Small" to PrefsManager.ICON_SIZE_SMALL,
+            "Medium" to PrefsManager.ICON_SIZE_MEDIUM,
+            "Large" to PrefsManager.ICON_SIZE_LARGE,
         )
     }
 
@@ -82,7 +89,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
             prefs.use24Hour = isChecked
         }
 
-        // Greyscale toggle (system-wide)
+        // Greyscale toggle (system-wide via bedtime mode / daltonizer)
         val greyscaleToggle = findViewById<Switch>(R.id.switchGreyscale)
         greyscaleToggle.isChecked = prefs.greyscaleMode
         greyscaleToggle.setOnCheckedChangeListener { _, isChecked ->
@@ -91,6 +98,19 @@ class DisplaySettingsActivity : AppCompatActivity() {
             } else {
                 greyscaleToggle.isChecked = !isChecked
             }
+        }
+
+        // Icon size picker
+        findViewById<TextView>(R.id.btnIconSize).setOnClickListener {
+            showIconSizePicker()
+        }
+        updateIconSizeLabel()
+
+        // Show app labels toggle
+        val labelsToggle = findViewById<Switch>(R.id.switchShowLabels)
+        labelsToggle.isChecked = prefs.showAppLabels
+        labelsToggle.setOnCheckedChangeListener { _, isChecked ->
+            prefs.showAppLabels = isChecked
         }
 
         applyTheme()
@@ -118,6 +138,27 @@ class DisplaySettingsActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showIconSizePicker() {
+        val names = ICON_SIZE_OPTIONS.map { it.first }.toTypedArray()
+
+        AlertDialog.Builder(this, R.style.NokiaDialog)
+            .setTitle("App icon size")
+            .setItems(names) { _, which ->
+                prefs.appIconSize = ICON_SIZE_OPTIONS[which].second
+                updateIconSizeLabel()
+            }
+            .show()
+    }
+
+    private fun updateIconSizeLabel() {
+        val label = when (prefs.appIconSize) {
+            PrefsManager.ICON_SIZE_SMALL -> "Small"
+            PrefsManager.ICON_SIZE_LARGE -> "Large"
+            else -> "Medium"
+        }
+        findViewById<TextView>(R.id.btnIconSize).text = "App icon size ($label) \u25b8"
+    }
+
     private fun updateColourPreview() {
         val preview = findViewById<View>(R.id.colourPreview)
         val bg = GradientDrawable()
@@ -129,7 +170,9 @@ class DisplaySettingsActivity : AppCompatActivity() {
 
     /**
      * Toggle system-wide greyscale via the accessibility daltonizer.
+     * This is the same mechanism used by Bedtime Mode / Wind Down.
      * Requires WRITE_SECURE_SETTINGS (granted once via ADB).
+     * Falls back to opening Bedtime Mode settings if permission not granted.
      */
     private fun setSystemGreyscale(enabled: Boolean): Boolean {
         return try {
@@ -148,22 +191,52 @@ class DisplaySettingsActivity : AppCompatActivity() {
             }
             true
         } catch (e: SecurityException) {
+            // Try to open Bedtime Mode settings as fallback
             AlertDialog.Builder(this, R.style.NokiaDialog)
-                .setTitle("Permission needed")
+                .setTitle("Greyscale")
                 .setMessage(
-                    "System greyscale requires a one-time permission grant.\n\n" +
-                    "Connect your phone to a computer and run:\n\n" +
+                    "To enable system-wide greyscale, you can:\n\n" +
+                    "1. Open Bedtime Mode in Digital Wellbeing and enable greyscale there\n\n" +
+                    "OR grant permission once via computer:\n" +
                     "adb shell pm grant com.dumbphone.launcher android.permission.WRITE_SECURE_SETTINGS"
                 )
-                .setPositiveButton("OK", null)
+                .setPositiveButton("OPEN BEDTIME") { _, _ ->
+                    openBedtimeSettings()
+                }
+                .setNegativeButton("CANCEL", null)
                 .show()
             false
         }
     }
 
+    private fun openBedtimeSettings() {
+        // Try Digital Wellbeing bedtime settings
+        try {
+            val intent = Intent().apply {
+                component = ComponentName(
+                    "com.google.android.apps.wellbeing",
+                    "com.google.android.apps.wellbeing.settings.WindDownSettingsActivity"
+                )
+            }
+            startActivity(intent)
+            return
+        } catch (_: Exception) { }
+
+        // Fallback: try Digital Wellbeing main activity
+        try {
+            val intent = packageManager.getLaunchIntentForPackage("com.google.android.apps.wellbeing")
+            if (intent != null) {
+                startActivity(intent)
+                return
+            }
+        } catch (_: Exception) { }
+
+        // Last resort: open display settings
+        startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
+    }
+
     private fun applyTheme() {
         val fgColor = prefs.getFgColour()
-        val dimColor = prefs.getDimColour()
 
         findViewById<View>(R.id.displaySettingsRoot).setBackgroundColor(Color.BLACK)
         findViewById<TextView>(R.id.displayTitle).setTextColor(fgColor)
@@ -171,5 +244,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
         findViewById<Switch>(R.id.switchShowSeconds).setTextColor(fgColor)
         findViewById<Switch>(R.id.switch24Hour).setTextColor(fgColor)
         findViewById<Switch>(R.id.switchGreyscale).setTextColor(fgColor)
+        findViewById<TextView>(R.id.btnIconSize).setTextColor(fgColor)
+        findViewById<Switch>(R.id.switchShowLabels).setTextColor(fgColor)
     }
 }

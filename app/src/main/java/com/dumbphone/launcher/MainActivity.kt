@@ -1,10 +1,11 @@
 package com.dumbphone.launcher
 
+import android.Manifest
 import android.app.NotificationManager
-import android.appwidget.AppWidgetHost
-import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,12 +13,13 @@ import android.provider.AlarmClock
 import android.provider.Settings
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import java.text.SimpleDateFormat
@@ -29,16 +31,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: PrefsManager
     private lateinit var clockText: TextView
     private lateinit var dateText: TextView
+    private lateinit var weatherText: TextView
     private lateinit var menuHint: TextView
     private lateinit var rootLayout: LinearLayout
-    private lateinit var widgetContainer: FrameLayout
     private lateinit var gestureDetector: GestureDetector
 
-    // Widget hosting
-    private lateinit var appWidgetHost: AppWidgetHost
+    // Weather cache
+    private var cachedWeatherText: String? = null
+    private var lastWeatherFetch: Long = 0
+    private val weatherCacheMs = 30 * 60 * 1000L // 30 minutes
 
-    companion object {
-        private const val APPWIDGET_HOST_ID = 1024
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            fetchWeather()
+        } else {
+            weatherText.text = "Enable location for weather"
+            weatherText.visibility = View.VISIBLE
+        }
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -62,15 +73,12 @@ class MainActivity : AppCompatActivity() {
         @Suppress("DEPRECATION")
         window.navigationBarColor = Color.BLACK
 
-        // Init widget hosting
-        appWidgetHost = AppWidgetHost(this, APPWIDGET_HOST_ID)
-
         // Bind views
         rootLayout = findViewById(R.id.rootLayout)
         clockText = findViewById(R.id.clockText)
         dateText = findViewById(R.id.dateText)
+        weatherText = findViewById(R.id.weatherText)
         menuHint = findViewById(R.id.menuHint)
-        widgetContainer = findViewById(R.id.widgetContainer)
 
         // Block back button - we are the home screen
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -131,23 +139,13 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         handler.post(clockRunnable)
         applyTheme()
-        restoreWidget()
+        refreshWeather()
         applyFocusMode()
     }
 
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(clockRunnable)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        appWidgetHost.startListening()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        appWidgetHost.stopListening()
     }
 
     private fun updateClock() {
@@ -184,6 +182,7 @@ class MainActivity : AppCompatActivity() {
         rootLayout.setBackgroundColor(Color.BLACK)
         clockText.setTextColor(fgColor)
         dateText.setTextColor(dimColor)
+        weatherText.setTextColor(dimColor)
         menuHint.setTextColor(dimColor)
         findViewById<TextView>(R.id.btnMenu).setTextColor(fgColor)
         findViewById<TextView>(R.id.btnSettings).setTextColor(fgColor)
@@ -200,31 +199,60 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ── Widget hosting ──────────────────────────────────────────────────
+    // ── Weather ──────────────────────────────────────────────────────────
 
-    private fun restoreWidget() {
+    private fun refreshWeather() {
         if (!prefs.weatherEnabled) {
-            widgetContainer.removeAllViews()
+            weatherText.visibility = View.GONE
             return
         }
 
-        val widgetId = prefs.widgetId
-        if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            val appWidgetManager = AppWidgetManager.getInstance(this)
-            val widgetInfo = appWidgetManager.getAppWidgetInfo(widgetId)
-            if (widgetInfo != null) {
-                val hostView = appWidgetHost.createView(this, widgetId, widgetInfo)
-                hostView.setAppWidget(widgetId, widgetInfo)
-                widgetContainer.removeAllViews()
-                widgetContainer.addView(hostView)
-            } else {
-                prefs.widgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-                prefs.weatherEnabled = false
-                widgetContainer.removeAllViews()
-            }
-        } else {
-            widgetContainer.removeAllViews()
+        // Show cached data immediately if available
+        if (cachedWeatherText != null) {
+            weatherText.text = cachedWeatherText
+            weatherText.visibility = View.VISIBLE
         }
+
+        // Skip fetch if cache is fresh
+        if (System.currentTimeMillis() - lastWeatherFetch < weatherCacheMs && cachedWeatherText != null) {
+            return
+        }
+
+        // Check location permission
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            return
+        }
+
+        fetchWeather()
+    }
+
+    private fun fetchWeather() {
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+
+        @Suppress("MissingPermission")
+        val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+
+        if (location == null) {
+            weatherText.text = "Waiting for location..."
+            weatherText.visibility = View.VISIBLE
+            return
+        }
+
+        Thread {
+            val data = WeatherUtil.fetch(location.latitude, location.longitude)
+            runOnUiThread {
+                if (data != null) {
+                    cachedWeatherText = "${data.temperature}${data.unit} \u00b7 ${data.condition}"
+                    lastWeatherFetch = System.currentTimeMillis()
+                    weatherText.text = cachedWeatherText
+                } else {
+                    weatherText.text = cachedWeatherText ?: "Weather unavailable"
+                }
+                weatherText.visibility = View.VISIBLE
+            }
+        }.start()
     }
 
     // ── Dialogs ──────────────────────────────────────────────────────────

@@ -93,12 +93,55 @@
         android:id="@+id/greyscaleHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Turns your entire phone screen greyscale"
+        android:text="Turns your entire phone screen greyscale (like Bedtime Mode)"
         android:textColor="#555555"
         android:fontFamily="monospace"
         android:textSize="11sp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingBottom="4dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#222222"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- APP DRAWER section header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── APP DRAWER ──"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp" />
+
+    <!-- Icon size -->
+    <TextView
+        android:id="@+id/btnIconSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="App icon size ▸"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <!-- Show app labels -->
+    <Switch
+        android:id="@+id/switchShowLabels"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show app labels"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp" />
 
 </LinearLayout>
