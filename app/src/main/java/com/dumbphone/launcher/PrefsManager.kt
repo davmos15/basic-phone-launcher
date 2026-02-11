@@ -21,6 +21,7 @@ class PrefsManager(context: Context) {
         private const val KEY_CLOCK_COLOUR = "clock_colour"
         private const val KEY_SHOW_SECONDS = "show_seconds"
         private const val KEY_WIDGET_ID = "home_widget_id"
+        private const val KEY_FOCUS_MODE = "focus_mode_enabled"
 
         val DEFAULT_CLOCK_COLOUR = Color.parseColor("#7FBF3F") // Classic green
 
@@ -53,6 +54,10 @@ class PrefsManager(context: Context) {
     var widgetId: Int
         get() = prefs.getInt(KEY_WIDGET_ID, -1) // -1 == AppWidgetManager.INVALID_APPWIDGET_ID
         set(value) = prefs.edit().putInt(KEY_WIDGET_ID, value).apply()
+
+    var focusModeEnabled: Boolean
+        get() = prefs.getBoolean(KEY_FOCUS_MODE, false)
+        set(value) = prefs.edit().putBoolean(KEY_FOCUS_MODE, value).apply()
 
     /** Returns a dimmed version of the clock colour for secondary text. */
     fun getDimColour(): Int {

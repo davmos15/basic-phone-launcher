@@ -7,7 +7,9 @@ import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -17,6 +19,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.abs
 
 class AppDrawerActivity : AppCompatActivity() {
 
@@ -24,6 +27,7 @@ class AppDrawerActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var titleText: TextView
     private lateinit var rootLayout: LinearLayout
+    private lateinit var gestureDetector: GestureDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +47,32 @@ class AppDrawerActivity : AppCompatActivity() {
         // Nokia-style 3-column grid
         recyclerView.layoutManager = GridLayoutManager(this, 3)
 
+        // Swipe-down to go back to home screen
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                val dy = e2.y - (e1?.y ?: 0f)
+                if (dy > 100 && abs(velocityY) > 200) {
+                    finish()
+                    return true
+                }
+                return false
+            }
+        })
+
         loadApps()
         applyTheme()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev != null) {
+            gestureDetector.onTouchEvent(ev)
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onResume() {

@@ -1,5 +1,6 @@
 package com.dumbphone.launcher
 
+import android.app.NotificationManager
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetManager
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.AlarmClock
+import android.provider.Settings
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.WindowManager
@@ -113,10 +115,10 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // Show first-run hint
+        // Show first-run dialog: prompt to set as default launcher
         if (prefs.isFirstRun) {
-            showFirstRunDialog()
             prefs.isFirstRun = false
+            showSetAsLauncherDialog()
         }
 
         applyTheme()
@@ -135,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         handler.post(clockRunnable)
         applyTheme()
         restoreWidget()
+        applyFocusMode()
     }
 
     override fun onPause() {
@@ -184,6 +187,17 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnSettings).setTextColor(fgColor)
     }
 
+    // ── Focus Mode (DND) ─────────────────────────────────────────────────
+
+    private fun applyFocusMode() {
+        if (prefs.focusModeEnabled) {
+            val nm = getSystemService(NotificationManager::class.java)
+            if (nm.isNotificationPolicyAccessGranted) {
+                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+            }
+        }
+    }
+
     // ── Widget hosting ──────────────────────────────────────────────────
 
     private fun restoreWidget() {
@@ -205,7 +219,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showFirstRunDialog() {
+    // ── Dialogs ──────────────────────────────────────────────────────────
+
+    private fun showSetAsLauncherDialog() {
         AlertDialog.Builder(this, R.style.NokiaDialog)
             .setTitle("Welcome to DumbPhone")
             .setMessage(
@@ -214,9 +230,12 @@ class MainActivity : AppCompatActivity() {
                 "\u2022 Press SETTINGS to configure\n" +
                 "\u2022 Tap the clock to open alarms\n" +
                 "\u2022 Add widgets from Settings\n\n" +
-                "To switch back to your normal launcher, go to Settings \u2192 Apps \u2192 Default Apps \u2192 Home App."
+                "Would you like to set DumbPhone as your default launcher?"
             )
-            .setPositiveButton("GOT IT", null)
+            .setPositiveButton("SET AS DEFAULT") { _, _ ->
+                startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+            }
+            .setNegativeButton("LATER", null)
             .show()
     }
 }
