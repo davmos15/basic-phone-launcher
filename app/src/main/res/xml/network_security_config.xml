@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration for DumbPhone Launcher.
+    This launcher has NO legitimate need for network access.
+    Block all cleartext traffic as defense-in-depth.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

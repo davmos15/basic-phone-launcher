@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsRootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:fitsSystemWindows="true"
+    android:padding="16dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/settingsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SETTINGS"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#333333"
+        android:layout_marginBottom="12dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- DISPLAY SECTION -->
+            <TextView
+                android:id="@+id/sectionDisplay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="── DISPLAY ──"
+                android:textColor="#4A7025"
+                android:fontFamily="monospace"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:paddingBottom="12dp" />
+
+            <LinearLayout
+                android:id="@+id/btnClockColour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/lblClockColour"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Clock colour ▸"
+                    android:textColor="#7FBF3F"
+                    android:fontFamily="monospace"
+                    android:textSize="15sp" />
+
+                <View
+                    android:id="@+id/colourPreview"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="#7FBF3F" />
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/switchShowSeconds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show seconds on clock"
+                android:textColor="#7FBF3F"
+                android:fontFamily="monospace"
+                android:textSize="15sp"
+                android:padding="8dp" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#222222"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- HOMEPAGE WIDGETS SECTION -->
+            <TextView
+                android:id="@+id/sectionWidgets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="── HOMEPAGE WIDGETS ──"
+                android:textColor="#4A7025"
+                android:fontFamily="monospace"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/btnSelectWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select widget ▸"
+                android:textColor="#7FBF3F"
+                android:fontFamily="monospace"
+                android:textSize="15sp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackground" />
+
+            <TextView
+                android:id="@+id/btnRemoveWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Remove widget"
+                android:textColor="#7FBF3F"
+                android:fontFamily="monospace"
+                android:textSize="15sp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackground" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#222222"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- APPS SECTION -->
+            <TextView
+                android:id="@+id/sectionApps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="── ALLOWED APPS ──"
+                android:textColor="#4A7025"
+                android:fontFamily="monospace"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:paddingBottom="12dp" />
+
+            <!-- App list -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/appListRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#222222"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Exit button -->
+            <TextView
+                android:id="@+id/btnExitDumbMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="EXIT DUMB MODE ▸"
+                android:textColor="#FF4444"
+                android:fontFamily="monospace"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

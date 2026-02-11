@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nokia_green">#7FBF3F</color>
+    <color name="nokia_green_dim">#4A7025</color>
+    <color name="nokia_bg">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="dim_white">#666666</color>
+    <color name="red">#FF4444</color>
+    <color name="orange">#FF6B35</color>
+</resources>

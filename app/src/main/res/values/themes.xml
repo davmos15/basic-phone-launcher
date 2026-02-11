@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main app theme -->
+    <style name="Theme.DumbPhone" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:colorBackground">#000000</item>
+        <item name="android:textColor">#7FBF3F</item>
+        <item name="colorPrimary">#7FBF3F</item>
+        <item name="colorPrimaryDark">#000000</item>
+        <item name="colorAccent">#7FBF3F</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:windowAnimationStyle">@style/NoAnimation</item>
+    </style>
+
+    <!-- No animations for that snappy Nokia feel -->
+    <style name="NoAnimation" parent="@android:style/Animation">
+        <item name="android:activityOpenEnterAnimation">@null</item>
+        <item name="android:activityOpenExitAnimation">@null</item>
+        <item name="android:activityCloseEnterAnimation">@null</item>
+        <item name="android:activityCloseExitAnimation">@null</item>
+    </style>
+
+    <!-- Dialog style matching the Nokia theme -->
+    <style name="NokiaDialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">#111111</item>
+        <item name="android:textColor">#7FBF3F</item>
+        <item name="colorAccent">#7FBF3F</item>
+        <item name="android:textColorPrimary">#7FBF3F</item>
+        <item name="android:textColorSecondary">#4A7025</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+</resources>

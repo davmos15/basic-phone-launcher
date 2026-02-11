@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="16dp"
+    android:fitsSystemWindows="true"
+    android:gravity="center_horizontal">
+
+    <!-- Spacer (top) -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Big Clock -->
+    <TextView
+        android:id="@+id/clockText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12:00"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="72sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.05"
+        android:gravity="center" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mon, 1 Jan 2025"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginTop="4dp" />
+
+    <!-- Widget container -->
+    <FrameLayout
+        android:id="@+id/widgetContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Spacer (bottom) -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Menu hint -->
+    <TextView
+        android:id="@+id/menuHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="swipe up for apps"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="10sp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Bottom softkey bar - above system nav -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="48dp">
+
+        <TextView
+            android:id="@+id/btnMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MENU"
+            android:textColor="#7FBF3F"
+            android:fontFamily="monospace"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="start"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/btnSettings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SETTINGS"
+            android:textColor="#7FBF3F"
+            android:fontFamily="monospace"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="end"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground" />
+    </LinearLayout>
+
+</LinearLayout>
