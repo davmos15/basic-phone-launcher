@@ -46,5 +46,19 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DumbPhone" />
 
+        <!-- Display Settings -->
+        <activity
+            android:name=".DisplaySettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DumbPhone" />
+
+        <!-- Apps Settings -->
+        <activity
+            android:name=".AppsSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DumbPhone" />
+
     </application>
 </manifest>

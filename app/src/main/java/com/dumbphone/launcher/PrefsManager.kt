@@ -4,12 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 
-/**
- * Manages all launcher preferences:
- * - Whitelisted app packages
- * - Display preferences (clock colour, seconds)
- * - Widget ID
- */
 class PrefsManager(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -20,18 +14,20 @@ class PrefsManager(context: Context) {
         private const val KEY_FIRST_RUN = "first_run"
         private const val KEY_CLOCK_COLOUR = "clock_colour"
         private const val KEY_SHOW_SECONDS = "show_seconds"
+        private const val KEY_USE_24_HOUR = "use_24_hour"
+        private const val KEY_GREYSCALE = "greyscale_mode"
         private const val KEY_WIDGET_ID = "home_widget_id"
+        private const val KEY_WEATHER_ENABLED = "weather_enabled"
         private const val KEY_FOCUS_MODE = "focus_mode_enabled"
 
-        val DEFAULT_CLOCK_COLOUR = Color.parseColor("#7FBF3F") // Classic green
+        val DEFAULT_CLOCK_COLOUR = Color.parseColor("#7FBF3F")
 
-        // Default apps that are always useful
         val DEFAULT_APPS = setOf(
-            "com.android.dialer",        // Phone
-            "com.google.android.dialer",  // Google Phone
-            "com.android.contacts",       // Contacts
-            "com.google.android.apps.messaging", // Messages
-            "com.android.mms",           // SMS
+            "com.android.dialer",
+            "com.google.android.dialer",
+            "com.android.contacts",
+            "com.google.android.apps.messaging",
+            "com.android.mms",
         )
     }
 
@@ -51,19 +47,37 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_SHOW_SECONDS, false)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_SECONDS, value).apply()
 
+    var use24Hour: Boolean
+        get() = prefs.getBoolean(KEY_USE_24_HOUR, true)
+        set(value) = prefs.edit().putBoolean(KEY_USE_24_HOUR, value).apply()
+
+    var greyscaleMode: Boolean
+        get() = prefs.getBoolean(KEY_GREYSCALE, false)
+        set(value) = prefs.edit().putBoolean(KEY_GREYSCALE, value).apply()
+
     var widgetId: Int
-        get() = prefs.getInt(KEY_WIDGET_ID, -1) // -1 == AppWidgetManager.INVALID_APPWIDGET_ID
+        get() = prefs.getInt(KEY_WIDGET_ID, -1)
         set(value) = prefs.edit().putInt(KEY_WIDGET_ID, value).apply()
+
+    var weatherEnabled: Boolean
+        get() = prefs.getBoolean(KEY_WEATHER_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_WEATHER_ENABLED, value).apply()
 
     var focusModeEnabled: Boolean
         get() = prefs.getBoolean(KEY_FOCUS_MODE, false)
         set(value) = prefs.edit().putBoolean(KEY_FOCUS_MODE, value).apply()
 
-    /** Returns a dimmed version of the clock colour for secondary text. */
+    /** Returns the effective foreground colour (grey if greyscale mode is on). */
+    fun getFgColour(): Int {
+        return if (greyscaleMode) Color.parseColor("#AAAAAA") else clockColour
+    }
+
+    /** Returns a dimmed version of the foreground colour for secondary text. */
     fun getDimColour(): Int {
-        val r = Color.red(clockColour)
-        val g = Color.green(clockColour)
-        val b = Color.blue(clockColour)
+        val fg = getFgColour()
+        val r = Color.red(fg)
+        val g = Color.green(fg)
+        val b = Color.blue(fg)
         return Color.rgb((r * 0.45).toInt(), (g * 0.45).toInt(), (b * 0.45).toInt())
     }
 

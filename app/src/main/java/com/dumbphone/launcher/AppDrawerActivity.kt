@@ -101,7 +101,7 @@ class AppDrawerActivity : AppCompatActivity() {
     }
 
     private fun applyTheme() {
-        val fgColor = prefs.clockColour
+        val fgColor = prefs.getFgColour()
         rootLayout.setBackgroundColor(Color.BLACK)
         titleText.setTextColor(fgColor)
     }
@@ -135,7 +135,7 @@ class AppDrawerActivity : AppCompatActivity() {
             val matrix = ColorMatrix().apply { setSaturation(0f) }
             holder.icon.colorFilter = ColorMatrixColorFilter(matrix)
             holder.icon.alpha = 0.8f
-            holder.label.setTextColor(prefs.clockColour)
+            holder.label.setTextColor(prefs.getFgColour())
 
             holder.itemView.setOnClickListener {
                 val launchIntent = pm.getLaunchIntentForPackage(app.activityInfo.packageName)

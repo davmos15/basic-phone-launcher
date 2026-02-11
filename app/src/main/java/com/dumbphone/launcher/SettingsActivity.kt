@@ -6,65 +6,37 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.provider.Settings
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.GestureDetector
-import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.Switch
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var prefs: PrefsManager
-    private lateinit var appListRecycler: RecyclerView
     private lateinit var rootLayout: LinearLayout
     private lateinit var gestureDetector: GestureDetector
 
-    // Widget hosting
+    // Widget hosting (for weather widget)
     private lateinit var appWidgetManager: AppWidgetManager
     private lateinit var appWidgetHost: AppWidgetHost
     private var pendingWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
-    private var pendingWidgetProvider: ComponentName? = null
 
     private lateinit var widgetConfigLauncher: ActivityResultLauncher<Intent>
     private lateinit var widgetBindLauncher: ActivityResultLauncher<Intent>
 
-    // App list data
-    private var allApps: List<ResolveInfo> = emptyList()
-    private var filteredApps: List<ResolveInfo> = emptyList()
-    private lateinit var appAdapter: AppToggleAdapter
-
     companion object {
         private const val APPWIDGET_HOST_ID = 1024
-
-        // Colour presets for the picker
-        private val COLOUR_OPTIONS = arrayOf(
-            "#7FBF3F" to "Green (classic)",
-            "#FFFFFF" to "White",
-            "#00BFFF" to "Blue",
-            "#FF6B35" to "Orange",
-            "#FF4081" to "Pink",
-            "#B388FF" to "Purple",
-            "#FFD600" to "Yellow",
-            "#00E676" to "Mint",
-            "#FF1744" to "Red",
-            "#18FFFF" to "Cyan",
-        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,12 +56,12 @@ class SettingsActivity : AppCompatActivity() {
         appWidgetManager = AppWidgetManager.getInstance(this)
         appWidgetHost = AppWidgetHost(this, APPWIDGET_HOST_ID)
 
-        // Register activity result launchers for widget flow
+        // Register activity result launchers for widget binding flow
         widgetConfigLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                saveWidget(pendingWidgetId)
+                saveWeatherWidget(pendingWidgetId)
             } else {
                 appWidgetHost.deleteAppWidgetId(pendingWidgetId)
                 pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -129,16 +101,26 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
         }
 
-        // Clock colour picker
-        findViewById<LinearLayout>(R.id.btnClockColour).setOnClickListener {
-            showColourPicker()
+        // Navigate to Display settings
+        findViewById<TextView>(R.id.btnDisplay).setOnClickListener {
+            startActivity(Intent(this, DisplaySettingsActivity::class.java))
         }
 
-        // Show seconds toggle
-        val secondsToggle = findViewById<Switch>(R.id.switchShowSeconds)
-        secondsToggle.isChecked = prefs.showSeconds
-        secondsToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.showSeconds = isChecked
+        // Navigate to Apps settings
+        findViewById<TextView>(R.id.btnApps).setOnClickListener {
+            startActivity(Intent(this, AppsSettingsActivity::class.java))
+        }
+
+        // Weather toggle
+        val weatherToggle = findViewById<Switch>(R.id.switchWeather)
+        weatherToggle.isChecked = prefs.weatherEnabled
+        weatherToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                selectWeatherWidget()
+            } else {
+                removeWeatherWidget()
+                prefs.weatherEnabled = false
+            }
         }
 
         // Focus mode toggle
@@ -148,7 +130,6 @@ class SettingsActivity : AppCompatActivity() {
             if (isChecked) {
                 val nm = getSystemService(NotificationManager::class.java)
                 if (!nm.isNotificationPolicyAccessGranted) {
-                    // Need permission first
                     focusToggle.isChecked = false
                     AlertDialog.Builder(this, R.style.NokiaDialog)
                         .setTitle("DND Permission")
@@ -174,45 +155,21 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        // Widget buttons
-        findViewById<TextView>(R.id.btnSelectWidget).setOnClickListener {
-            selectWidget()
-        }
-
-        findViewById<TextView>(R.id.btnRemoveWidget).setOnClickListener {
-            removeWidget()
-        }
-
         // Exit to normal launcher
         findViewById<TextView>(R.id.btnExitDumbMode).setOnClickListener {
             showExitDialog()
         }
 
-        // App list
-        appListRecycler = findViewById(R.id.appListRecycler)
-        appListRecycler.layoutManager = LinearLayoutManager(this)
-        loadAllApps()
-
-        // Search
-        val searchInput = findViewById<EditText>(R.id.appSearchInput)
-        searchInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                filterApps(s?.toString() ?: "")
-            }
-        })
-
         applyTheme()
-        updateWidgetLabel()
-        updateColourPreview()
     }
 
     override fun onResume() {
         super.onResume()
         // Re-check focus mode toggle in case user just granted DND permission
-        val focusToggle = findViewById<Switch>(R.id.switchFocusMode)
-        focusToggle.isChecked = prefs.focusModeEnabled
+        findViewById<Switch>(R.id.switchFocusMode).isChecked = prefs.focusModeEnabled
+        // Re-check weather toggle in case widget was removed externally
+        findViewById<Switch>(R.id.switchWeather).isChecked = prefs.weatherEnabled
+        applyTheme()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
@@ -232,98 +189,62 @@ class SettingsActivity : AppCompatActivity() {
         appWidgetHost.stopListening()
     }
 
-    private fun loadAllApps() {
-        val pm = packageManager
-        val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-        allApps = pm.queryIntentActivities(mainIntent, 0)
-            .filter { it.activityInfo.packageName != packageName }
-            .sortedBy { it.loadLabel(pm).toString().lowercase() }
+    // ── Weather widget management ────────────────────────────────────────
 
-        filteredApps = allApps
-        appAdapter = AppToggleAdapter(filteredApps, pm)
-        appListRecycler.adapter = appAdapter
-    }
-
-    private fun filterApps(query: String) {
-        val pm = packageManager
-        filteredApps = if (query.isBlank()) {
-            allApps
-        } else {
-            val q = query.lowercase()
-            allApps.filter {
-                it.loadLabel(pm).toString().lowercase().contains(q) ||
-                it.activityInfo.packageName.lowercase().contains(q)
-            }
-        }
-        appAdapter = AppToggleAdapter(filteredApps, pm)
-        appListRecycler.adapter = appAdapter
-    }
-
-    // ── Colour picker ───────────────────────────────────────────────────
-
-    private fun showColourPicker() {
-        val names = COLOUR_OPTIONS.map { it.second }.toTypedArray()
-
-        AlertDialog.Builder(this, R.style.NokiaDialog)
-            .setTitle("Clock colour")
-            .setItems(names) { _, which ->
-                val hex = COLOUR_OPTIONS[which].first
-                prefs.clockColour = Color.parseColor(hex)
-                applyTheme()
-                updateColourPreview()
-                loadAllApps()
-            }
-            .show()
-    }
-
-    private fun updateColourPreview() {
-        val preview = findViewById<View>(R.id.colourPreview)
-        val bg = GradientDrawable()
-        bg.shape = GradientDrawable.RECTANGLE
-        bg.cornerRadius = 4f
-        bg.setColor(prefs.clockColour)
-        preview.background = bg
-    }
-
-    // ── Widget management ───────────────────────────────────────────────
-
-    private fun selectWidget() {
+    private fun selectWeatherWidget() {
+        // Remove old widget if any
         val currentId = prefs.widgetId
         if (currentId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             appWidgetHost.deleteAppWidgetId(currentId)
             prefs.widgetId = AppWidgetManager.INVALID_APPWIDGET_ID
         }
 
-        // Show available widgets and let user pick
-        val providers = appWidgetManager.installedProviders
+        // Filter for weather-related widgets
+        val allProviders = appWidgetManager.installedProviders
+        val weatherProviders = allProviders.filter { provider ->
+            val name = provider.provider.className.lowercase()
+            val label = provider.loadLabel(packageManager).lowercase()
+            val pkg = provider.provider.packageName.lowercase()
+            name.contains("weather") || label.contains("weather") ||
+            name.contains("forecast") || label.contains("forecast") ||
+            pkg.contains("weather")
+        }
+
+        // Fall back to all widgets if no weather-specific ones found
+        val providers = if (weatherProviders.isNotEmpty()) weatherProviders else allProviders
+        val title = if (weatherProviders.isNotEmpty()) "Select weather widget" else "Select widget (no weather widgets found)"
+
         if (providers.isEmpty()) {
             Toast.makeText(this, "No widgets available", Toast.LENGTH_SHORT).show()
+            findViewById<Switch>(R.id.switchWeather).isChecked = false
             return
         }
 
         val labels = providers.map { it.loadLabel(packageManager) }.toTypedArray()
         AlertDialog.Builder(this, R.style.NokiaDialog)
-            .setTitle("Select widget")
+            .setTitle(title)
             .setItems(labels) { _, which ->
                 val provider = providers[which]
-                bindWidget(provider)
+                bindWeatherWidget(provider)
             }
-            .setNegativeButton("CANCEL", null)
+            .setNegativeButton("CANCEL") { _, _ ->
+                // User cancelled, uncheck the toggle
+                findViewById<Switch>(R.id.switchWeather).isChecked = false
+            }
+            .setOnCancelListener {
+                findViewById<Switch>(R.id.switchWeather).isChecked = false
+            }
             .show()
     }
 
-    private fun bindWidget(provider: AppWidgetProviderInfo) {
+    private fun bindWeatherWidget(provider: AppWidgetProviderInfo) {
         val widgetId = appWidgetHost.allocateAppWidgetId()
         pendingWidgetId = widgetId
-        pendingWidgetProvider = provider.provider
 
         val bound = appWidgetManager.bindAppWidgetIdIfAllowed(widgetId, provider.provider)
         if (bound) {
             configureWidget(widgetId)
         } else {
-            // Ask user for permission to bind
             val bindIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, provider.provider)
@@ -341,39 +262,22 @@ class SettingsActivity : AppCompatActivity() {
             }
             widgetConfigLauncher.launch(configIntent)
         } else {
-            saveWidget(widgetId)
+            saveWeatherWidget(widgetId)
         }
     }
 
-    private fun saveWidget(widgetId: Int) {
+    private fun saveWeatherWidget(widgetId: Int) {
         prefs.widgetId = widgetId
+        prefs.weatherEnabled = true
         pendingWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-        pendingWidgetProvider = null
-        updateWidgetLabel()
-        Toast.makeText(this, "Widget added", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Weather widget added", Toast.LENGTH_SHORT).show()
     }
 
-    private fun removeWidget() {
+    private fun removeWeatherWidget() {
         val currentId = prefs.widgetId
         if (currentId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             appWidgetHost.deleteAppWidgetId(currentId)
             prefs.widgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-            updateWidgetLabel()
-            Toast.makeText(this, "Widget removed", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "No widget to remove", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun updateWidgetLabel() {
-        val btn = findViewById<TextView>(R.id.btnSelectWidget)
-        val widgetId = prefs.widgetId
-        if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            val info = appWidgetManager.getAppWidgetInfo(widgetId)
-            val label = info?.loadLabel(packageManager) ?: "Unknown"
-            btn.text = "Change widget ($label) \u25b8"
-        } else {
-            btn.text = "Select widget \u25b8"
         }
     }
 
@@ -400,78 +304,19 @@ class SettingsActivity : AppCompatActivity() {
     // ── Theme ───────────────────────────────────────────────────────────
 
     private fun applyTheme() {
-        val fgColor = prefs.clockColour
+        val fgColor = prefs.getFgColour()
         val dimColor = prefs.getDimColour()
 
         rootLayout.setBackgroundColor(Color.BLACK)
         findViewById<TextView>(R.id.settingsTitle).setTextColor(fgColor)
         findViewById<TextView>(R.id.sectionLauncher).setTextColor(dimColor)
-        findViewById<TextView>(R.id.sectionDisplay).setTextColor(dimColor)
-        findViewById<TextView>(R.id.sectionFocus).setTextColor(dimColor)
-        findViewById<TextView>(R.id.sectionWidgets).setTextColor(dimColor)
-        findViewById<TextView>(R.id.sectionApps).setTextColor(dimColor)
+        findViewById<TextView>(R.id.sectionSubScreens).setTextColor(dimColor)
+        findViewById<TextView>(R.id.sectionFeatures).setTextColor(dimColor)
         findViewById<TextView>(R.id.btnSetDefaultLauncher).setTextColor(fgColor)
-        findViewById<TextView>(R.id.lblClockColour).setTextColor(fgColor)
-        findViewById<TextView>(R.id.btnSelectWidget).setTextColor(fgColor)
-        findViewById<TextView>(R.id.btnRemoveWidget).setTextColor(fgColor)
+        findViewById<TextView>(R.id.btnDisplay).setTextColor(fgColor)
+        findViewById<TextView>(R.id.btnApps).setTextColor(fgColor)
+        findViewById<Switch>(R.id.switchWeather).setTextColor(fgColor)
+        findViewById<Switch>(R.id.switchFocusMode).setTextColor(fgColor)
         findViewById<TextView>(R.id.btnExitDumbMode).setTextColor(Color.parseColor("#FF4444"))
-
-        val switchSeconds = findViewById<Switch>(R.id.switchShowSeconds)
-        switchSeconds.setTextColor(fgColor)
-
-        val switchFocus = findViewById<Switch>(R.id.switchFocusMode)
-        switchFocus.setTextColor(fgColor)
-    }
-
-    // ── App Toggle Adapter ──────────────────────────────────────────────
-
-    inner class AppToggleAdapter(
-        private val apps: List<ResolveInfo>,
-        private val pm: PackageManager
-    ) : RecyclerView.Adapter<AppToggleAdapter.ViewHolder>() {
-
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val icon: ImageView = view.findViewById(R.id.toggleAppIcon)
-            val label: TextView = view.findViewById(R.id.toggleAppLabel)
-            val packageText: TextView = view.findViewById(R.id.toggleAppPackage)
-            val toggle: CheckBox = view.findViewById(R.id.toggleAppCheck)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_app_toggle, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val app = apps[position]
-            val pkg = app.activityInfo.packageName
-            val label = app.loadLabel(pm).toString()
-
-            holder.icon.setImageDrawable(app.loadIcon(pm))
-            holder.label.text = label
-            holder.packageText.text = pkg
-
-            // Avoid triggering the listener when setting checked state
-            holder.toggle.setOnCheckedChangeListener(null)
-            holder.toggle.isChecked = prefs.isAppWhitelisted(pkg)
-
-            holder.label.setTextColor(prefs.clockColour)
-            holder.packageText.setTextColor(Color.parseColor("#555555"))
-
-            holder.toggle.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    prefs.addWhitelistedApp(pkg)
-                } else {
-                    prefs.removeWhitelistedApp(pkg)
-                }
-            }
-
-            holder.itemView.setOnClickListener {
-                holder.toggle.isChecked = !holder.toggle.isChecked
-            }
-        }
-
-        override fun getItemCount() = apps.size
     }
 }

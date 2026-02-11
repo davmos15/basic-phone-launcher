@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/appsSettingsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:fitsSystemWindows="true"
+    android:padding="16dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/appsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ALLOWED APPS"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#333333"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Search bar -->
+    <EditText
+        android:id="@+id/appSearchInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search apps..."
+        android:textColor="#7FBF3F"
+        android:textColorHint="#555555"
+        android:fontFamily="monospace"
+        android:textSize="14sp"
+        android:background="#111111"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:imeOptions="actionSearch" />
+
+    <!-- App list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/appListRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

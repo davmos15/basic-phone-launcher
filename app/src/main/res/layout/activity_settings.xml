@@ -29,256 +29,168 @@
         android:background="#333333"
         android:layout_marginBottom="12dp" />
 
-    <androidx.core.widget.NestedScrollView
+    <!-- LAUNCHER SECTION -->
+    <TextView
+        android:id="@+id/sectionLauncher"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── LAUNCHER ──"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/btnSetDefaultLauncher"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Set as default launcher ▸"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#222222"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- SUB-SCREENS SECTION -->
+    <TextView
+        android:id="@+id/sectionSubScreens"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── CONFIGURE ──"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/btnDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Display ▸"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btnApps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Allowed apps ▸"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#222222"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- FEATURES SECTION -->
+    <TextView
+        android:id="@+id/sectionFeatures"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="── FEATURES ──"
+        android:textColor="#4A7025"
+        android:fontFamily="monospace"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp" />
+
+    <Switch
+        android:id="@+id/switchWeather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show weather widget"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/weatherHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Displays a weather widget on the home screen"
+        android:textColor="#555555"
+        android:fontFamily="monospace"
+        android:textSize="11sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp" />
+
+    <Switch
+        android:id="@+id/switchFocusMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Do Not Disturb"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/focusModeHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto-enables DND when on home screen"
+        android:textColor="#555555"
+        android:fontFamily="monospace"
+        android:textSize="11sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp" />
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#222222"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
 
-            <!-- LAUNCHER SECTION -->
-            <TextView
-                android:id="@+id/sectionLauncher"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="── LAUNCHER ──"
-                android:textColor="#4A7025"
-                android:fontFamily="monospace"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="12dp" />
+    <!-- Exit button -->
+    <TextView
+        android:id="@+id/btnExitDumbMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="EXIT DUMB MODE ▸"
+        android:textColor="#FF4444"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:padding="12dp"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackground" />
 
-            <TextView
-                android:id="@+id/btnSetDefaultLauncher"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Set as default launcher ▸"
-                android:textColor="#7FBF3F"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackground" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#222222"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="4dp" />
-
-            <!-- DISPLAY SECTION -->
-            <TextView
-                android:id="@+id/sectionDisplay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="── DISPLAY ──"
-                android:textColor="#4A7025"
-                android:fontFamily="monospace"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="12dp" />
-
-            <LinearLayout
-                android:id="@+id/btnClockColour"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/lblClockColour"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Clock colour ▸"
-                    android:textColor="#7FBF3F"
-                    android:fontFamily="monospace"
-                    android:textSize="15sp" />
-
-                <View
-                    android:id="@+id/colourPreview"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="#7FBF3F" />
-            </LinearLayout>
-
-            <Switch
-                android:id="@+id/switchShowSeconds"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Show seconds on clock"
-                android:textColor="#7FBF3F"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:padding="8dp" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#222222"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="4dp" />
-
-            <!-- FOCUS MODE SECTION -->
-            <TextView
-                android:id="@+id/sectionFocus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="── FOCUS MODE ──"
-                android:textColor="#4A7025"
-                android:fontFamily="monospace"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="12dp" />
-
-            <Switch
-                android:id="@+id/switchFocusMode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Do Not Disturb"
-                android:textColor="#7FBF3F"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:padding="8dp" />
-
-            <TextView
-                android:id="@+id/focusModeHint"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Auto-enables DND when on home screen"
-                android:textColor="#555555"
-                android:fontFamily="monospace"
-                android:textSize="11sp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="4dp" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#222222"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="4dp" />
-
-            <!-- HOMEPAGE WIDGETS SECTION -->
-            <TextView
-                android:id="@+id/sectionWidgets"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="── HOMEPAGE WIDGETS ──"
-                android:textColor="#4A7025"
-                android:fontFamily="monospace"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="12dp" />
-
-            <TextView
-                android:id="@+id/btnSelectWidget"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Select widget ▸"
-                android:textColor="#7FBF3F"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackground" />
-
-            <TextView
-                android:id="@+id/btnRemoveWidget"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Remove widget"
-                android:textColor="#7FBF3F"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackground" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#222222"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="4dp" />
-
-            <!-- APPS SECTION -->
-            <TextView
-                android:id="@+id/sectionApps"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="── ALLOWED APPS ──"
-                android:textColor="#4A7025"
-                android:fontFamily="monospace"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp" />
-
-            <!-- Search bar -->
-            <EditText
-                android:id="@+id/appSearchInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Search apps..."
-                android:textColor="#7FBF3F"
-                android:textColorHint="#555555"
-                android:fontFamily="monospace"
-                android:textSize="14sp"
-                android:background="#111111"
-                android:padding="10dp"
-                android:layout_marginBottom="8dp"
-                android:inputType="text"
-                android:maxLines="1"
-                android:imeOptions="actionSearch" />
-
-            <!-- App list -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/appListRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#222222"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp" />
-
-            <!-- Exit button -->
-            <TextView
-                android:id="@+id/btnExitDumbMode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="EXIT DUMB MODE ▸"
-                android:textColor="#FF4444"
-                android:fontFamily="monospace"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:padding="12dp"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackground" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="24dp" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="24dp" />
 
 </LinearLayout>

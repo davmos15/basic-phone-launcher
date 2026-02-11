@@ -37,11 +37,6 @@ class MainActivity : AppCompatActivity() {
     // Widget hosting
     private lateinit var appWidgetHost: AppWidgetHost
 
-    // Cached date formatters (avoid re-creating every second)
-    private val timeFormatWithSeconds = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    private val timeFormatNoSeconds = SimpleDateFormat("HH:mm", Locale.getDefault())
-    private val dateFormat = SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault())
-
     companion object {
         private const val APPWIDGET_HOST_ID = 1024
     }
@@ -157,9 +152,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateClock() {
         val now = Date()
-        val timeFormat = if (prefs.showSeconds) timeFormatWithSeconds else timeFormatNoSeconds
+
+        // Build time format based on 24h and seconds preferences
+        val pattern = buildString {
+            append(if (prefs.use24Hour) "HH:mm" else "hh:mm")
+            if (prefs.showSeconds) append(":ss")
+            if (!prefs.use24Hour) append(" a")
+        }
+        val timeFormat = SimpleDateFormat(pattern, Locale.getDefault())
         clockText.text = timeFormat.format(now)
-        dateText.text = dateFormat.format(now)
+        dateText.text = SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault()).format(now)
     }
 
     private fun openClockApp() {
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyTheme() {
-        val fgColor = prefs.clockColour
+        val fgColor = prefs.getFgColour()
         val dimColor = prefs.getDimColour()
 
         rootLayout.setBackgroundColor(Color.BLACK)
@@ -201,6 +203,11 @@ class MainActivity : AppCompatActivity() {
     // ── Widget hosting ──────────────────────────────────────────────────
 
     private fun restoreWidget() {
+        if (!prefs.weatherEnabled) {
+            widgetContainer.removeAllViews()
+            return
+        }
+
         val widgetId = prefs.widgetId
         if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             val appWidgetManager = AppWidgetManager.getInstance(this)
@@ -212,6 +219,7 @@ class MainActivity : AppCompatActivity() {
                 widgetContainer.addView(hostView)
             } else {
                 prefs.widgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+                prefs.weatherEnabled = false
                 widgetContainer.removeAllViews()
             }
         } else {
@@ -228,8 +236,7 @@ class MainActivity : AppCompatActivity() {
                 "Your phone is now in dumb mode.\n\n" +
                 "\u2022 Press MENU or swipe up for your apps\n" +
                 "\u2022 Press SETTINGS to configure\n" +
-                "\u2022 Tap the clock to open alarms\n" +
-                "\u2022 Add widgets from Settings\n\n" +
+                "\u2022 Tap the clock to open alarms\n\n" +
                 "Would you like to set DumbPhone as your default launcher?"
             )
             .setPositiveButton("SET AS DEFAULT") { _, _ ->
