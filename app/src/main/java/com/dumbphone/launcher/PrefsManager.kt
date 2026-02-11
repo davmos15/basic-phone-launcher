@@ -67,10 +67,8 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_FOCUS_MODE, false)
         set(value) = prefs.edit().putBoolean(KEY_FOCUS_MODE, value).apply()
 
-    /** Returns the effective foreground colour (grey if greyscale mode is on). */
-    fun getFgColour(): Int {
-        return if (greyscaleMode) Color.parseColor("#AAAAAA") else clockColour
-    }
+    /** Returns the effective foreground colour for UI elements. */
+    fun getFgColour(): Int = clockColour
 
     /** Returns a dimmed version of the foreground colour for secondary text. */
     fun getDimColour(): Int {

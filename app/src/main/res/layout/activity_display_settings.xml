@@ -93,7 +93,7 @@
         android:id="@+id/greyscaleHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Replaces colour with grey across the launcher"
+        android:text="Turns your entire phone screen greyscale"
         android:textColor="#555555"
         android:fontFamily="monospace"
         android:textSize="11sp"

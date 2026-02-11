@@ -3,12 +3,14 @@ package com.dumbphone.launcher
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.provider.Settings
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.abs
@@ -80,12 +82,15 @@ class DisplaySettingsActivity : AppCompatActivity() {
             prefs.use24Hour = isChecked
         }
 
-        // Greyscale toggle
+        // Greyscale toggle (system-wide)
         val greyscaleToggle = findViewById<Switch>(R.id.switchGreyscale)
         greyscaleToggle.isChecked = prefs.greyscaleMode
         greyscaleToggle.setOnCheckedChangeListener { _, isChecked ->
-            prefs.greyscaleMode = isChecked
-            applyTheme()
+            if (setSystemGreyscale(isChecked)) {
+                prefs.greyscaleMode = isChecked
+            } else {
+                greyscaleToggle.isChecked = !isChecked
+            }
         }
 
         applyTheme()
@@ -120,6 +125,40 @@ class DisplaySettingsActivity : AppCompatActivity() {
         bg.cornerRadius = 4f
         bg.setColor(prefs.clockColour)
         preview.background = bg
+    }
+
+    /**
+     * Toggle system-wide greyscale via the accessibility daltonizer.
+     * Requires WRITE_SECURE_SETTINGS (granted once via ADB).
+     */
+    private fun setSystemGreyscale(enabled: Boolean): Boolean {
+        return try {
+            Settings.Secure.putInt(
+                contentResolver,
+                "accessibility_display_daltonizer_enabled",
+                if (enabled) 1 else 0
+            )
+            if (enabled) {
+                // 0 = monochromacy (greyscale)
+                Settings.Secure.putInt(
+                    contentResolver,
+                    "accessibility_display_daltonizer",
+                    0
+                )
+            }
+            true
+        } catch (e: SecurityException) {
+            AlertDialog.Builder(this, R.style.NokiaDialog)
+                .setTitle("Permission needed")
+                .setMessage(
+                    "System greyscale requires a one-time permission grant.\n\n" +
+                    "Connect your phone to a computer and run:\n\n" +
+                    "adb shell pm grant com.dumbphone.launcher android.permission.WRITE_SECURE_SETTINGS"
+                )
+                .setPositiveButton("OK", null)
+                .show()
+            false
+        }
     }
 
     private fun applyTheme() {
