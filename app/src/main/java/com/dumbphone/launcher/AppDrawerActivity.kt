@@ -86,6 +86,7 @@ class AppDrawerActivity : AppCompatActivity() {
     private fun getColumnCount(): Int = when (prefs.appIconSize) {
         PrefsManager.ICON_SIZE_SMALL -> 4
         PrefsManager.ICON_SIZE_LARGE -> 2
+        PrefsManager.ICON_SIZE_EXTRA_LARGE -> 1
         else -> 3
     }
 
@@ -123,9 +124,12 @@ class AppDrawerActivity : AppCompatActivity() {
         private val iconSizeDp = when (prefs.appIconSize) {
             PrefsManager.ICON_SIZE_SMALL -> 36
             PrefsManager.ICON_SIZE_LARGE -> 64
+            PrefsManager.ICON_SIZE_EXTRA_LARGE -> 96
             else -> 48
         }
         private val showLabels = prefs.showAppLabels
+        private val monochromeFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
+        private val fgColour = prefs.getFgColour()
 
         inner class AppViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val icon: ImageView = view.findViewById(R.id.appIcon)
@@ -149,15 +153,14 @@ class AppDrawerActivity : AppCompatActivity() {
             holder.icon.layoutParams.height = sizePx
             holder.icon.setImageDrawable(icon)
 
-            // Monochrome icons with chosen colour
-            val matrix = ColorMatrix().apply { setSaturation(0f) }
-            holder.icon.colorFilter = ColorMatrixColorFilter(matrix)
+            // Monochrome icons
+            holder.icon.colorFilter = monochromeFilter
             holder.icon.alpha = 0.8f
 
             // Label visibility
             if (showLabels) {
                 holder.label.text = if (label.length > 10) label.substring(0, 9) + "\u2026" else label
-                holder.label.setTextColor(prefs.getFgColour())
+                holder.label.setTextColor(fgColour)
                 holder.label.visibility = View.VISIBLE
             } else {
                 holder.label.visibility = View.GONE

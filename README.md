@@ -12,11 +12,14 @@ A Nokia 3310-inspired minimal launcher for Android. Turn your smartphone into a 
 - **Retro aesthetic** -- black background, monochrome text, monospace font
 - **Customisable colour** -- choose from 10 colour presets for the clock and UI
 - **Configurable app whitelist** -- choose exactly which apps appear in your menu
-- **Home screen widgets** -- add any Android widget to the home screen
+- **Adjustable icon sizes** -- Small, Medium, Large, or Extra Large app icons
 - **Swipe-up app drawer** -- swipe up or tap MENU to open your apps
 - **Clock tap** -- tap the clock to open your alarms
+- **Optional weather widget** -- shows current weather on the home screen (requires internet and location)
+- **Greyscale mode** -- system-wide greyscale toggle via Accessibility or Bedtime Mode
+- **Do Not Disturb** -- auto-enable DND when on the home screen
+- **Wallpaper override** -- temporarily sets wallpaper to black while the launcher is active
 - **No distractions** -- only whitelisted apps are accessible
-- **Privacy-first** -- no internet permission, no analytics, no data collection
 - **Security hardened** -- ProGuard/R8 obfuscation, backup disabled, cleartext blocked
 
 ## Requirements
@@ -89,10 +92,11 @@ The APK will be at `app/build/outputs/apk/debug/app-debug.apk`.
 
 ### Settings
 
-- **Clock colour** -- choose from 10 colour presets (Green, White, Blue, Orange, Pink, Purple, Yellow, Mint, Red, Cyan)
-- **Show seconds** -- toggle seconds display on the clock
-- **Homepage widgets** -- add or remove an Android widget on the home screen
+- **Display** -- clock colour, show seconds, 24-hour clock, greyscale mode, icon size, app labels
 - **Allowed apps** -- check/uncheck any installed app to control what appears in the menu
+- **Weather widget** -- toggle weather display on the home screen (needs location permission)
+- **Do Not Disturb** -- auto-enable DND when on the home screen
+- **Wallpaper override** -- set wallpaper to black while the launcher is active (restores original when disabled)
 - **Exit Dumb Mode** -- opens Android settings to switch back to your normal launcher
 
 ### Exiting Dumb Mode
@@ -142,18 +146,27 @@ chmod +x scripts/setup-nothing-phone-2a-avd.sh
 emulator -avd NothingPhone2a
 ```
 
-## Security
+## Security & Permissions
 
-This launcher is built with privacy and security as core principles:
-
-- **No INTERNET permission** -- the app cannot make any network requests
-- **Network security config** -- all cleartext traffic explicitly blocked as defence-in-depth
 - **No data collection** -- zero analytics, crash reporting, or telemetry
+- **Network security config** -- all cleartext traffic explicitly blocked as defence-in-depth
 - **Backup disabled** -- `allowBackup=false` prevents data extraction via ADB
 - **ProGuard/R8 enabled** -- release builds are obfuscated and optimised
-- **Minimal permissions** -- only `QUERY_ALL_PACKAGES` (required to list installed apps) and `BIND_APPWIDGET` (required for home screen widgets)
 - **Exported components locked** -- only the home launcher activity is exported
 - **SharedPreferences in MODE_PRIVATE** -- app data is not accessible to other apps
+
+### Permissions used
+
+| Permission | Required | Purpose |
+|---|---|---|
+| `QUERY_ALL_PACKAGES` | Yes | List installed apps for whitelist |
+| `INTERNET` | No | Weather widget (Open-Meteo API, no API key) |
+| `ACCESS_COARSE_LOCATION` | No | Weather widget (approximate location) |
+| `ACCESS_NOTIFICATION_POLICY` | No | Do Not Disturb toggle |
+| `SET_WALLPAPER` | No | Wallpaper override feature |
+| `WRITE_SECURE_SETTINGS` | No | Direct greyscale toggle (ADB-granted; falls back to Accessibility Settings if not granted) |
+
+> **Note:** `WRITE_SECURE_SETTINGS` is a signature-level permission that can only be granted via ADB. If not granted, the greyscale toggle guides the user to system Accessibility settings instead. This permission may cause review flags on the Play Store -- consider removing it for store-distributed builds.
 
 ## Release Signing
 
@@ -192,16 +205,21 @@ keytool -genkey -v \
 ```
 app/src/main/
   java/com/dumbphone/launcher/
-    MainActivity.kt          -- Home screen (clock, date, widget, gestures)
-    AppDrawerActivity.kt     -- App drawer grid (whitelisted apps)
-    SettingsActivity.kt      -- Settings (colour, widgets, app whitelist)
-    PrefsManager.kt          -- SharedPreferences wrapper
+    MainActivity.kt              -- Home screen (clock, date, weather, gestures)
+    AppDrawerActivity.kt         -- App drawer grid (whitelisted apps)
+    SettingsActivity.kt          -- Settings menu (features, wallpaper, DND)
+    DisplaySettingsActivity.kt   -- Display settings (colour, clock, icons, greyscale)
+    AppsSettingsActivity.kt      -- App whitelist manager with search
+    PrefsManager.kt              -- SharedPreferences wrapper
+    WeatherUtil.kt               -- Open-Meteo weather API client
   res/layout/
-    activity_main.xml        -- Home screen layout
-    activity_app_drawer.xml  -- App drawer layout
-    activity_settings.xml    -- Settings layout
-    item_app.xml             -- App grid item (icon + label)
-    item_app_toggle.xml      -- App toggle item (icon + label + checkbox)
+    activity_main.xml            -- Home screen layout
+    activity_app_drawer.xml      -- App drawer layout
+    activity_settings.xml        -- Settings layout
+    activity_display_settings.xml -- Display settings layout
+    activity_apps_settings.xml   -- Apps settings layout
+    item_app.xml                 -- App grid item (icon + label)
+    item_app_toggle.xml          -- App toggle item (icon + label + checkbox)
 ```
 
 ## Licence

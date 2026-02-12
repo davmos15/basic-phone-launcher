@@ -93,7 +93,7 @@
         android:id="@+id/greyscaleHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Turns your entire phone screen greyscale (like Bedtime Mode)"
+        android:text="System-wide greyscale. If toggle doesn't work directly, use Accessibility \u2192 Color Correction"
         android:textColor="#555555"
         android:fontFamily="monospace"
         android:textSize="11sp"

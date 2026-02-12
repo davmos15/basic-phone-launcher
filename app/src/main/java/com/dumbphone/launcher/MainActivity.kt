@@ -2,8 +2,10 @@ package com.dumbphone.launcher
 
 import android.Manifest
 import android.app.NotificationManager
+import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.location.LocationManager
 import android.os.Bundle
@@ -35,6 +37,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var menuHint: TextView
     private lateinit var rootLayout: LinearLayout
     private lateinit var gestureDetector: GestureDetector
+
+    // Clock formatter cache (rebuilt when prefs change)
+    private var cachedTimeFormat: SimpleDateFormat? = null
+    private var cachedTimePattern: String? = null
+    private val dateFormat = SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault())
 
     // Weather cache
     private var cachedWeatherText: String? = null
@@ -141,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         applyTheme()
         refreshWeather()
         applyFocusMode()
+        enforceWallpaperOverride()
     }
 
     override fun onPause() {
@@ -151,15 +159,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateClock() {
         val now = Date()
 
-        // Build time format based on 24h and seconds preferences
+        // Rebuild formatter only when pattern changes (prefs toggle)
         val pattern = buildString {
             append(if (prefs.use24Hour) "HH:mm" else "hh:mm")
             if (prefs.showSeconds) append(":ss")
             if (!prefs.use24Hour) append(" a")
         }
-        val timeFormat = SimpleDateFormat(pattern, Locale.getDefault())
-        clockText.text = timeFormat.format(now)
-        dateText.text = SimpleDateFormat("EEE, d MMM yyyy", Locale.getDefault()).format(now)
+        if (pattern != cachedTimePattern) {
+            cachedTimePattern = pattern
+            cachedTimeFormat = SimpleDateFormat(pattern, Locale.getDefault())
+        }
+        clockText.text = cachedTimeFormat!!.format(now)
+        dateText.text = dateFormat.format(now)
     }
 
     private fun openClockApp() {
@@ -197,6 +208,27 @@ class MainActivity : AppCompatActivity() {
                 nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
             }
         }
+    }
+
+    // ── Wallpaper Override ─────────────────────────────────────────────
+
+    private var wallpaperOverrideApplied = false
+
+    private fun enforceWallpaperOverride() {
+        if (!prefs.overrideWallpaper) {
+            wallpaperOverrideApplied = false
+            return
+        }
+        if (wallpaperOverrideApplied) return
+        try {
+            val wm = WallpaperManager.getInstance(this)
+            val blackBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.BLACK)
+            }
+            wm.setBitmap(blackBitmap)
+            blackBitmap.recycle()
+            wallpaperOverrideApplied = true
+        } catch (_: Exception) { }
     }
 
     // ── Weather ──────────────────────────────────────────────────────────

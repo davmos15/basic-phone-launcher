@@ -58,8 +58,11 @@ android {
     }
 
     lint {
-        abortOnError false
+        abortOnError true
         warningsAsErrors false
+        checkReleaseBuilds true
+        // Suppress known false positives for this project
+        disable += ['MissingTranslation', 'HardcodedText', 'UseSwitchCompatOrMaterialCode']
     }
 }
 

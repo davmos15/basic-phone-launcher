@@ -161,6 +161,28 @@
         android:paddingEnd="8dp"
         android:paddingBottom="4dp" />
 
+    <Switch
+        android:id="@+id/switchWallpaper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Override wallpaper"
+        android:textColor="#7FBF3F"
+        android:fontFamily="monospace"
+        android:textSize="15sp"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/wallpaperHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sets wallpaper to black while launcher is active. Restores original when disabled"
+        android:textColor="#555555"
+        android:fontFamily="monospace"
+        android:textSize="11sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp" />
+
     <!-- Spacer -->
     <View
         android:layout_width="0dp"

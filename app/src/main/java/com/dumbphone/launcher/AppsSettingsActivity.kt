@@ -17,7 +17,9 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
@@ -92,9 +94,9 @@ class AppsSettingsActivity : AppCompatActivity() {
             .filter { it.activityInfo.packageName != packageName }
             .sortedBy { it.loadLabel(pm).toString().lowercase() }
 
-        filteredApps = allApps
-        appAdapter = AppToggleAdapter(filteredApps, pm)
+        appAdapter = AppToggleAdapter(pm)
         appListRecycler.adapter = appAdapter
+        appAdapter.submitList(allApps)
     }
 
     private fun filterApps(query: String) {
@@ -108,8 +110,7 @@ class AppsSettingsActivity : AppCompatActivity() {
                 it.activityInfo.packageName.lowercase().contains(q)
             }
         }
-        appAdapter = AppToggleAdapter(filteredApps, pm)
-        appListRecycler.adapter = appAdapter
+        appAdapter.submitList(filteredApps)
     }
 
     private fun applyTheme() {
@@ -122,9 +123,8 @@ class AppsSettingsActivity : AppCompatActivity() {
     // ── App Toggle Adapter ──────────────────────────────────────────────
 
     inner class AppToggleAdapter(
-        private val apps: List<ResolveInfo>,
         private val pm: PackageManager
-    ) : RecyclerView.Adapter<AppToggleAdapter.ViewHolder>() {
+    ) : ListAdapter<ResolveInfo, AppToggleAdapter.ViewHolder>(AppDiffCallback()) {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val icon: ImageView = view.findViewById(R.id.toggleAppIcon)
@@ -140,7 +140,7 @@ class AppsSettingsActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val app = apps[position]
+            val app = getItem(position)
             val pkg = app.activityInfo.packageName
             val label = app.loadLabel(pm).toString()
 
@@ -167,7 +167,13 @@ class AppsSettingsActivity : AppCompatActivity() {
                 holder.toggle.isChecked = !holder.toggle.isChecked
             }
         }
+    }
 
-        override fun getItemCount() = apps.size
+    private class AppDiffCallback : DiffUtil.ItemCallback<ResolveInfo>() {
+        override fun areItemsTheSame(oldItem: ResolveInfo, newItem: ResolveInfo): Boolean =
+            oldItem.activityInfo.packageName == newItem.activityInfo.packageName
+
+        override fun areContentsTheSame(oldItem: ResolveInfo, newItem: ResolveInfo): Boolean =
+            oldItem.activityInfo.packageName == newItem.activityInfo.packageName
     }
 }

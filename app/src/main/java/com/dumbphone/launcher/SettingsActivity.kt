@@ -2,9 +2,12 @@ package com.dumbphone.launcher
 
 import android.Manifest
 import android.app.NotificationManager
+import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.Settings
 import android.view.GestureDetector
@@ -16,6 +19,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
 import kotlin.math.abs
 
 class SettingsActivity : AppCompatActivity() {
@@ -129,6 +133,17 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+        // Wallpaper override toggle
+        val wallpaperToggle = findViewById<Switch>(R.id.switchWallpaper)
+        wallpaperToggle.isChecked = prefs.overrideWallpaper
+        wallpaperToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                enableWallpaperOverride()
+            } else {
+                disableWallpaperOverride()
+            }
+        }
+
         // Exit to normal launcher
         findViewById<TextView>(R.id.btnExitDumbMode).setOnClickListener {
             showExitDialog()
@@ -141,6 +156,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onResume()
         findViewById<Switch>(R.id.switchFocusMode).isChecked = prefs.focusModeEnabled
         findViewById<Switch>(R.id.switchWeather).isChecked = prefs.weatherEnabled
+        findViewById<Switch>(R.id.switchWallpaper).isChecked = prefs.overrideWallpaper
         applyTheme()
     }
 
@@ -149,6 +165,64 @@ class SettingsActivity : AppCompatActivity() {
             gestureDetector.onTouchEvent(ev)
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    // ── Wallpaper Override ────────────────────────────────────────────────
+
+    private val wallpaperBackupFile: File
+        get() = File(filesDir, "wallpaper_backup.png")
+
+    private fun enableWallpaperOverride() {
+        val wm = WallpaperManager.getInstance(this)
+
+        // Try to back up the current wallpaper
+        try {
+            val currentDrawable = wm.drawable
+            if (currentDrawable is BitmapDrawable && currentDrawable.bitmap != null) {
+                wallpaperBackupFile.outputStream().use { out ->
+                    currentDrawable.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+            }
+        } catch (_: Exception) {
+            // Can't back up - user will need to restore manually
+        }
+
+        // Set black wallpaper
+        try {
+            val blackBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.BLACK)
+            }
+            wm.setBitmap(blackBitmap)
+            blackBitmap.recycle()
+            prefs.overrideWallpaper = true
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not set wallpaper", Toast.LENGTH_SHORT).show()
+            findViewById<Switch>(R.id.switchWallpaper).isChecked = false
+        }
+    }
+
+    private fun disableWallpaperOverride() {
+        prefs.overrideWallpaper = false
+
+        // Restore backed-up wallpaper
+        if (wallpaperBackupFile.exists()) {
+            try {
+                val wm = WallpaperManager.getInstance(this)
+                val bitmap = android.graphics.BitmapFactory.decodeFile(wallpaperBackupFile.absolutePath)
+                if (bitmap != null) {
+                    wm.setBitmap(bitmap)
+                    bitmap.recycle()
+                }
+                wallpaperBackupFile.delete()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not restore wallpaper. Set it manually in Settings", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            // No backup available - clear to system default
+            try {
+                WallpaperManager.getInstance(this).clear()
+            } catch (_: Exception) { }
+        }
     }
 
     // ── Dialogs ─────────────────────────────────────────────────────────
@@ -187,6 +261,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnApps).setTextColor(fgColor)
         findViewById<Switch>(R.id.switchWeather).setTextColor(fgColor)
         findViewById<Switch>(R.id.switchFocusMode).setTextColor(fgColor)
+        findViewById<Switch>(R.id.switchWallpaper).setTextColor(fgColor)
         findViewById<TextView>(R.id.btnExitDumbMode).setTextColor(Color.parseColor("#FF4444"))
     }
 }

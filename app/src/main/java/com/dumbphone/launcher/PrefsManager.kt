@@ -20,6 +20,7 @@ class PrefsManager(context: Context) {
         private const val KEY_FOCUS_MODE = "focus_mode_enabled"
         private const val KEY_APP_ICON_SIZE = "app_icon_size"
         private const val KEY_SHOW_APP_LABELS = "show_app_labels"
+        private const val KEY_OVERRIDE_WALLPAPER = "override_wallpaper"
 
         val DEFAULT_CLOCK_COLOUR = Color.parseColor("#7FBF3F")
 
@@ -31,10 +32,11 @@ class PrefsManager(context: Context) {
             "com.android.mms",
         )
 
-        // Icon sizes: 0 = small, 1 = medium, 2 = large
+        // Icon sizes: 0 = small, 1 = medium, 2 = large, 3 = extra large
         const val ICON_SIZE_SMALL = 0
         const val ICON_SIZE_MEDIUM = 1
         const val ICON_SIZE_LARGE = 2
+        const val ICON_SIZE_EXTRA_LARGE = 3
     }
 
     var isFirstRun: Boolean
@@ -77,6 +79,10 @@ class PrefsManager(context: Context) {
     var showAppLabels: Boolean
         get() = prefs.getBoolean(KEY_SHOW_APP_LABELS, true)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_APP_LABELS, value).apply()
+
+    var overrideWallpaper: Boolean
+        get() = prefs.getBoolean(KEY_OVERRIDE_WALLPAPER, false)
+        set(value) = prefs.edit().putBoolean(KEY_OVERRIDE_WALLPAPER, value).apply()
 
     /** Returns the foreground colour for UI elements. */
     fun getFgColour(): Int = clockColour

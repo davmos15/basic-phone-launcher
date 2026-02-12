@@ -39,6 +39,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
             "Small" to PrefsManager.ICON_SIZE_SMALL,
             "Medium" to PrefsManager.ICON_SIZE_MEDIUM,
             "Large" to PrefsManager.ICON_SIZE_LARGE,
+            "Extra Large" to PrefsManager.ICON_SIZE_EXTRA_LARGE,
         )
     }
 
@@ -117,6 +118,30 @@ class DisplaySettingsActivity : AppCompatActivity() {
         updateColourPreview()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Sync greyscale toggle with actual system state
+        val daltoniserEnabled = try {
+            Settings.Secure.getInt(contentResolver, "accessibility_display_daltonizer_enabled") == 1
+        } catch (_: Settings.SettingNotFoundException) {
+            false
+        }
+        val greyscaleToggle = findViewById<Switch>(R.id.switchGreyscale)
+        if (greyscaleToggle.isChecked != daltoniserEnabled) {
+            greyscaleToggle.setOnCheckedChangeListener(null)
+            greyscaleToggle.isChecked = daltoniserEnabled
+            prefs.greyscaleMode = daltoniserEnabled
+            greyscaleToggle.setOnCheckedChangeListener { _, isChecked ->
+                if (setSystemGreyscale(isChecked)) {
+                    prefs.greyscaleMode = isChecked
+                } else {
+                    greyscaleToggle.isChecked = !isChecked
+                }
+            }
+        }
+        applyTheme()
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (ev != null) {
             gestureDetector.onTouchEvent(ev)
@@ -154,6 +179,7 @@ class DisplaySettingsActivity : AppCompatActivity() {
         val label = when (prefs.appIconSize) {
             PrefsManager.ICON_SIZE_SMALL -> "Small"
             PrefsManager.ICON_SIZE_LARGE -> "Large"
+            PrefsManager.ICON_SIZE_EXTRA_LARGE -> "Extra Large"
             else -> "Medium"
         }
         findViewById<TextView>(R.id.btnIconSize).text = "App icon size ($label) \u25b8"
@@ -191,16 +217,18 @@ class DisplaySettingsActivity : AppCompatActivity() {
             }
             true
         } catch (e: SecurityException) {
-            // Try to open Bedtime Mode settings as fallback
+            // Guide user to enable greyscale via system settings
             AlertDialog.Builder(this, R.style.NokiaDialog)
                 .setTitle("Greyscale")
                 .setMessage(
-                    "To enable system-wide greyscale, you can:\n\n" +
-                    "1. Open Bedtime Mode in Digital Wellbeing and enable greyscale there\n\n" +
-                    "OR grant permission once via computer:\n" +
-                    "adb shell pm grant com.dumbphone.launcher android.permission.WRITE_SECURE_SETTINGS"
+                    "To enable greyscale, open your phone's Accessibility settings " +
+                    "and enable Color Correction \u2192 Greyscale.\n\n" +
+                    "The toggle will update automatically when you return."
                 )
-                .setPositiveButton("OPEN BEDTIME") { _, _ ->
+                .setPositiveButton("ACCESSIBILITY") { _, _ ->
+                    startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                }
+                .setNeutralButton("BEDTIME MODE") { _, _ ->
                     openBedtimeSettings()
                 }
                 .setNegativeButton("CANCEL", null)

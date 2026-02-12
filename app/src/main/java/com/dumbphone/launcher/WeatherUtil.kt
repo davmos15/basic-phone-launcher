@@ -14,17 +14,21 @@ object WeatherUtil {
 
     /** Fetch current weather from Open-Meteo. Must be called on a background thread. */
     fun fetch(latitude: Double, longitude: Double): WeatherData? {
+        var conn: HttpURLConnection? = null
         return try {
             val url = URL(
                 "https://api.open-meteo.com/v1/forecast" +
                 "?latitude=$latitude&longitude=$longitude" +
                 "&current=temperature_2m,weather_code&timezone=auto"
             )
-            val conn = url.openConnection() as HttpURLConnection
+            conn = url.openConnection() as HttpURLConnection
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
-            val response = conn.inputStream.bufferedReader().readText()
-            conn.disconnect()
+
+            val responseCode = conn.responseCode
+            if (responseCode != HttpURLConnection.HTTP_OK) return null
+
+            val response = conn.inputStream.bufferedReader().use { it.readText() }
 
             val json = JSONObject(response)
             val current = json.getJSONObject("current")
@@ -35,6 +39,8 @@ object WeatherUtil {
             WeatherData(temp, unit, codeToCondition(code))
         } catch (e: Exception) {
             null
+        } finally {
+            conn?.disconnect()
         }
     }
 
