@@ -1,5 +1,6 @@
 package com.dumbphone.launcher
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.NotificationManager
 import android.app.WallpaperManager
@@ -172,6 +173,7 @@ class SettingsActivity : AppCompatActivity() {
     private val wallpaperBackupFile: File
         get() = File(filesDir, "wallpaper_backup.png")
 
+    @SuppressLint("MissingPermission")
     private fun enableWallpaperOverride() {
         val wm = WallpaperManager.getInstance(this)
 
